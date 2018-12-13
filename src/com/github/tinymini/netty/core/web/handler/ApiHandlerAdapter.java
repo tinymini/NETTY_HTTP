@@ -1,0 +1,106 @@
+package com.github.tinymini.netty.core.web.handler;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import com.github.tinymini.netty.common.exception.CustomException;
+import com.github.tinymini.netty.common.util.ClassUtils;
+import com.github.tinymini.netty.core.web.ApiBase;
+import com.github.tinymini.netty.web.enums.ParameterType;
+
+/**
+ * API 공통
+ * 
+ * @author shkim
+ *
+ */
+public abstract class ApiHandlerAdapter extends ApiBase implements ApiHandler {
+  
+  private static final String SHOULD_BE_OVERRIDE = "should be override";
+  /** 파라메터 타입 */
+  protected ParameterType parameterType = ParameterType.QUERY_STRING;
+  /** 요청 정보 */
+  protected Map<String, Object> requestInfo;
+  /** 응답 객체 */
+  protected Map<String, Object> resultObject = new HashMap<>();
+  /** 에러 데이터 */
+  protected Map<String, Object> errorMap = new HashMap<>();
+
+  public Map<String, Object> getResult() {
+    return this.resultObject;
+  }
+
+  public ParameterType getParameterType() {
+    return parameterType;
+  }
+
+  public ApiHandler setParameterType(ParameterType parameterType) {
+    this.parameterType = parameterType;
+    return this;
+  }
+
+  public ApiHandler setRequestInfo(Map<String, Object> requestInfo) {
+    this.requestInfo = requestInfo;
+    return this;
+  }
+
+  public ApiHandler setResultCode(int errorCode) {
+    this.resultObject.put(RESULT_CODE, errorCode);
+    return this;
+  }
+
+  public ApiHandler setResultCodeIfNotExist(int errorCode) {
+    if (this.resultObject.get(RESULT_CODE) == null) {
+      this.resultObject.put(RESULT_CODE, errorCode);
+    }
+    return this;
+  }
+
+  public ApiHandler putResult(String key, Object value) {
+    this.resultObject.put(key, value);
+    return this;
+  }
+
+  public Map<String, Object> getErrorMap() {
+    return errorMap;
+  }
+
+  @Override
+  public boolean validate(Map<String, List<String>> requestData) {
+    throw new RuntimeException(SHOULD_BE_OVERRIDE);
+  }
+
+  @Override
+  public Object validateAndGetModel(Map<String, List<String>> requestData) {
+    throw new RuntimeException(SHOULD_BE_OVERRIDE);
+  }
+
+  @Override
+  public ApiHandler execute() throws CustomException {
+    throw new RuntimeException(SHOULD_BE_OVERRIDE);
+  }
+
+  @Override
+  public ApiHandler execute(Object dto) throws CustomException {
+    throw new RuntimeException(SHOULD_BE_OVERRIDE);
+  }
+
+  /**
+   * 유효성 검사 후 결과 리턴
+   * 
+   * @param t
+   * @param requestData
+   * @return
+   */
+  public <T> T validateAndSetResultCode(T model, Map<String, List<String>> requestData) {
+    ClassUtils.autoComplete(model, requestData, this.errorMap);
+    if (this.errorMap.size() > 0) {
+      putResult(INVALID_FIELD, this.errorMap);
+      setResultCode(INVALID_API_PARAMETER);
+      return null;
+    } else {
+      return model;
+    }
+  }
+
+}
