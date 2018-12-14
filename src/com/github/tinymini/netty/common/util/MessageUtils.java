@@ -31,14 +31,22 @@ public class MessageUtils implements Constants {
   }
 
   /**
+   * 기본 메세지 번들명 설정
+   * 
+   * @param defaultBaseName
+   */
+  public static void setBaseMessageBundle(Class<?> clazz, String propertiesName) {
+    MessageUtils.BaseName = getResourceNameFromClass(clazz, propertiesName);
+  }
+
+  /**
    * classPath 기준으로 resouce명 반환
    * 
    * @param clazz
    * @param fileName
    * @return
    */
-  @SuppressWarnings("rawtypes")
-  public static String getResourceNameFromClass(Class clazz, String fileName) {
+  public static String getResourceNameFromClass(Class<?> clazz, String fileName) {
     return clazz.getName().replaceFirst(clazz.getSimpleName() + "$", "") + fileName;
   }
 

@@ -1,9 +1,5 @@
 package com.github.tinymini.netty.core.web.service;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -11,16 +7,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.ConstructorArgumentValues;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.util.AntPathMatcher;
-import org.springframework.util.ReflectionUtils;
-import org.springframework.web.bind.annotation.RequestMapping;
 import com.github.tinymini.netty.common.exception.CustomException;
 import com.github.tinymini.netty.common.util.BeanUtils;
 import com.github.tinymini.netty.core.web.ApiBase;
@@ -33,15 +20,11 @@ import io.netty.handler.codec.http.QueryStringDecoder;
  * 
  * @author shkim
  */
-public class ServiceDispatcher extends ApiBase implements InitializingBean {
+public class ServiceDispatcher extends ApiBase {
   private static final Log logger = LogFactory.getLog(ServiceDispatcher.class);
 
   /** 기본 핸들러 */
   private String defaultHandlerName;
-  /** 핸들러 등록용 맵 */
-  private static final List<String> API_HANDLERS = new ArrayList<>();
-  /** URI pathmatcher 전역 */
-  private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
   /** 기본 핸들러 게터 */
   public String getDefaultHandlerName() {
@@ -87,61 +70,6 @@ public class ServiceDispatcher extends ApiBase implements InitializingBean {
     return getDefaultHandler().setResultCode(errorCode);
   }
 
-  @Override
-  /** 초기화 코드 */
-  public void afterPropertiesSet() throws Exception {
-    final ApplicationContext context = BeanUtils.getContext();
-    String[] beanNames = context.getBeanNamesForType(Object.class);
-    final DefaultListableBeanFactory factory =
-        (DefaultListableBeanFactory) ((ConfigurableApplicationContext) context).getBeanFactory();
-    // bean 이름으로 핸들러 등록
-    for (final String beanName : beanNames) {
-      if (beanName.startsWith("/")) {
-        final Object bean = context.getBean(beanName);
-        final List<String> aliases = new LinkedList<>(Arrays.asList(context.getAliases(beanName)));
-        aliases.add(beanName);
-
-        ReflectionUtils.doWithMethods(bean.getClass(), new ReflectionUtils.MethodCallback() {
-
-          @Override
-          public void doWith(Method arg0) throws IllegalArgumentException, IllegalAccessException {
-            RequestMapping mapping = arg0.getAnnotation(RequestMapping.class);
-            String[] values = mapping.value();
-            Object handler;
-            try {
-              handler = arg0.invoke(bean);
-            } catch (InvocationTargetException e) {
-              e.printStackTrace();
-              throw new RuntimeException(e);
-            }
-
-            GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
-            ConstructorArgumentValues constValues = new ConstructorArgumentValues();
-            constValues.addGenericArgumentValue(bean);
-
-            beanDefinition.setScope(BeanDefinition.SCOPE_PROTOTYPE);
-            beanDefinition.setBeanClass(handler.getClass());
-            beanDefinition.setConstructorArgumentValues(constValues);
-
-            for (String alias : aliases) {
-              for (String value : values) {
-                String path = PATH_MATCHER.combine(alias, value);
-                factory.registerBeanDefinition(path, beanDefinition);
-                API_HANDLERS.add(path);
-              }
-            }
-          }
-        }, new ReflectionUtils.MethodFilter() {
-
-          @Override
-          public boolean matches(Method arg0) {
-            return arg0.getAnnotation(RequestMapping.class) != null;
-          }
-        });
-      }
-    }
-  }
-
   /**
    * 핸들러 선택 후 실행
    * 
@@ -166,15 +94,15 @@ public class ServiceDispatcher extends ApiBase implements InitializingBean {
     List<String> matches = new LinkedList<>();
 
     // XML 등록된 패턴과 매핑
-    for (String patternString : API_HANDLERS) {
+    for (String patternString : BeanUtils.API_HANDLERS) {
 
       // 패턴 매칭
-      if (PATH_MATCHER.match(patternString, serviceUri)) {
+      if (BeanUtils.PATH_MATCHER.match(patternString, serviceUri)) {
         matches.add(patternString);
       } ;
     }
     // 우선순위 정렬
-    Collections.sort(matches, PATH_MATCHER.getPatternComparator(serviceUri));
+    Collections.sort(matches, BeanUtils.PATH_MATCHER.getPatternComparator(serviceUri));
     if (matches.size() > 0) {
       selectedPattern = matches.get(0);
       service = context.getBean(selectedPattern, ApiHandlerAdapter.class);
@@ -186,7 +114,7 @@ public class ServiceDispatcher extends ApiBase implements InitializingBean {
       paramMap.putAll(decoder.parameters());
       // REST 파라메터 매핑
       Map<String, String> restVariables =
-          PATH_MATCHER.extractUriTemplateVariables(selectedPattern, serviceUri);
+          BeanUtils.PATH_MATCHER.extractUriTemplateVariables(selectedPattern, serviceUri);
       for (Map.Entry<String, String> restEntry : restVariables.entrySet()) {
         putParam(paramMap, restEntry.getKey(), restEntry.getValue());
       }
