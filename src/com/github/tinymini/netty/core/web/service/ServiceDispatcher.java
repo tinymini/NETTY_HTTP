@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import com.github.tinymini.netty.common.exception.CustomException;
 import com.github.tinymini.netty.common.util.BeanUtils;
+import com.github.tinymini.netty.common.util.LoggingUtils;
 import com.github.tinymini.netty.core.web.ApiBase;
 import com.github.tinymini.netty.core.web.handler.ApiHandler;
 import com.github.tinymini.netty.core.web.handler.ApiHandlerAdapter;
@@ -99,7 +100,7 @@ public class ServiceDispatcher extends ApiBase {
       // 패턴 매칭
       if (BeanUtils.PATH_MATCHER.match(patternString, serviceUri)) {
         matches.add(patternString);
-      } ;
+      }
     }
     // 우선순위 정렬
     Collections.sort(matches, BeanUtils.PATH_MATCHER.getPatternComparator(serviceUri));
@@ -111,10 +112,18 @@ public class ServiceDispatcher extends ApiBase {
     if (service != null && selectedPattern != null) {
       paramMap = new HashMap<>();
       // GET 파라메터 세팅
-      paramMap.putAll(decoder.parameters());
+      Map<String, List<String>> getParams = decoder.parameters();
+      if (logger.isDebugEnabled()) {
+        logger.debug("getParams: " + LoggingUtils.paramMapToString(getParams));
+      }
+      paramMap.putAll(getParams);
       // REST 파라메터 매핑
-      Map<String, String> restVariables =
-          BeanUtils.PATH_MATCHER.extractUriTemplateVariables(selectedPattern, serviceUri);
+      int qmIndex = serviceUri.lastIndexOf("?");
+      Map<String, String> restVariables = BeanUtils.PATH_MATCHER.extractUriTemplateVariables(
+          selectedPattern, qmIndex > 0 ? serviceUri.substring(0, qmIndex) : serviceUri);
+      if (logger.isDebugEnabled()) {
+        logger.debug("restVariables :" + LoggingUtils.paramMapToString(restVariables));
+      }
       for (Map.Entry<String, String> restEntry : restVariables.entrySet()) {
         putParam(paramMap, restEntry.getKey(), restEntry.getValue());
       }
@@ -127,7 +136,11 @@ public class ServiceDispatcher extends ApiBase {
       // POST 요청 처리
       String requestBody = String.valueOf(requestMap.get(REQUEST_BODY));
       service.setRequestInfo(requestMap);
-      paramMap.putAll(service.getParameterType().decode(requestBody));
+      Map<String, List<String>> postParams = service.getParameterType().decode(requestBody);
+      if (logger.isDebugEnabled()) {
+        logger.debug("postParams: " + LoggingUtils.paramMapToString(postParams));
+      }
+      paramMap.putAll(postParams);
 
       // Service에 등록되어있는 validation 실행
       Object validatedDto = service.validateAndGetModel(paramMap);
@@ -137,8 +150,12 @@ public class ServiceDispatcher extends ApiBase {
       }
 
       // 서비스 실행
+      if (logger.isDebugEnabled()) {
+        logger.debug("execute:" + serviceUri);
+      }
       return service.execute(validatedDto);
     } catch (Exception e) {
+      logger.warn(LoggingUtils.stackTraceToString(e.getStackTrace(), 10));
       return getDefaultHandler(e);
     }
   }

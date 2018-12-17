@@ -91,7 +91,7 @@ public class HttpClientUtil {
       // 완료 후 닫고 대기
       ch.closeFuture().sync();
     } catch (InterruptedException e) {
-      logger.info(e.getMessage());
+      logger.warn(e.getMessage());
       throw new RuntimeException("Fail to connect to " + requestModel.getRawPath());
     }
     // 스레드 닫기

@@ -41,7 +41,9 @@ public class HttpClientHandler extends SimpleChannelInboundHandler<HttpContent> 
    */
   public ResponseModel getResult() {
     String responseBody = result.toString(CharsetUtil.UTF_8);
-    logger.debug("responseBody: " + responseBody);
+    if (logger.isDebugEnabled()) {
+      logger.debug("responseBody: " + responseBody);
+    }
     responseModel.setResponseBody(responseBody);
     return responseModel;
   }
@@ -52,7 +54,9 @@ public class HttpClientHandler extends SimpleChannelInboundHandler<HttpContent> 
 
   @Override
   public void channelActive(ChannelHandlerContext ctx) {
-    logger.debug("requestModel: " + this.requestModel);
+    if (logger.isDebugEnabled()) {
+      logger.debug("requestModel: " + this.requestModel);
+    }
     ctx.writeAndFlush(this.requestModel.getHttpRequest());
   }
 

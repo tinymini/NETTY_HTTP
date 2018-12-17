@@ -18,6 +18,7 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import com.github.tinymini.netty.common.Code;
 import com.github.tinymini.netty.common.util.BeanUtils;
+import com.github.tinymini.netty.common.util.LoggingUtils;
 import com.github.tinymini.netty.common.util.MessageUtils;
 import com.github.tinymini.netty.core.web.ApiBase;
 import com.github.tinymini.netty.web.WebConstants;
@@ -55,7 +56,7 @@ public final class RequestParser extends SimpleChannelInboundHandler<FullHttpMes
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-    logger.error(cause.getMessage());
+    logger.error(LoggingUtils.stackTraceToString(cause.getStackTrace(), 20));
     ctx.close();
   }
 
