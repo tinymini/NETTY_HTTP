@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -30,6 +32,7 @@ import com.github.tinymini.netty.common.exception.BeanException;
  *
  */
 public final class BeanUtils implements ApplicationContextAware, BeanFactoryPostProcessor {
+  private static final Log logger = LogFactory.getLog(BeanUtils.class);
   /** 빈 반환을 위한 컨텍스트 객체 */
   private static ApplicationContext ctx;
   /** 빈 등록을 위한 팩토리 */
@@ -63,15 +66,16 @@ public final class BeanUtils implements ApplicationContextAware, BeanFactoryPost
   }
 
   private synchronized void initialize() {
+    logger.info(this.getClass().getSimpleName() + " is initialized");
     final ApplicationContext context = ctx;
     final String[] beanNames = context.getBeanNamesForType(Object.class);
     final BeanDefinitionRegistry registry = ((BeanDefinitionRegistry) factory);
 
     // bean 이름으로 핸들러 등록
-
     for (final String beanName : beanNames) {
       if (beanName.startsWith("/")) {
         final Object bean = context.getBean(beanName);
+        logger.info("Controller: " + beanName);
         final List<String> aliases =
             new CopyOnWriteArrayList<>(Arrays.asList(context.getAliases(beanName)));
         aliases.add(beanName);
@@ -101,9 +105,9 @@ public final class BeanUtils implements ApplicationContextAware, BeanFactoryPost
             for (String alias : aliases) {
               for (String value : values) {
                 String path = PATH_MATCHER.combine(alias, value);
-                registry.removeBeanDefinition(beanName);
+                logger.info(path + " is mapped by " + arg0.getName());
                 synchronized (registry) {
-                  registry.registerBeanDefinition(beanName, beanDefinition);
+                  registry.registerBeanDefinition(path, beanDefinition);
                 }
                 API_HANDLERS.add(path);
               }

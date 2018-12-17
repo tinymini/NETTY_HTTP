@@ -66,17 +66,7 @@ public abstract class ApiHandlerAdapter extends ApiBase implements ApiHandler {
   }
 
   @Override
-  public boolean validate(Map<String, List<String>> requestData) {
-    throw new RuntimeException(SHOULD_BE_OVERRIDE);
-  }
-
-  @Override
   public Object validateAndGetModel(Map<String, List<String>> requestData) {
-    throw new RuntimeException(SHOULD_BE_OVERRIDE);
-  }
-
-  @Override
-  public ApiHandler execute() throws CustomException {
     throw new RuntimeException(SHOULD_BE_OVERRIDE);
   }
 

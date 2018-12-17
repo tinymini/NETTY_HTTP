@@ -12,7 +12,7 @@ import com.github.tinymini.netty.core.web.handler.ApiHandlerAdapter;
 public class DefaultHandler extends ApiHandlerAdapter {
 
   @Override
-  public ApiHandler execute() {
+  public ApiHandler execute(Object dto) {
     return setResultCodeIfNotExist(API_NOT_EXIST);
   }
 }

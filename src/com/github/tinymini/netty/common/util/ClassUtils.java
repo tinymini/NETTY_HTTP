@@ -58,7 +58,7 @@ public final class ClassUtils implements Code {
     final List<String> fieldList = new LinkedList<>();
 
     if (logger.isInfoEnabled()) {
-      logger.info("source: " + LoggingUtils.paramMapToString(map));
+      logger.info("parameters: " + LoggingUtils.paramMapToString(map));
     }
     ReflectionUtils.doWithFields(instanceClass, new ReflectionUtils.FieldCallback() {
       @Override
@@ -136,7 +136,6 @@ public final class ClassUtils implements Code {
         } catch (Exception e) {
           isError = true;
         }
-
         // 에러일 경우 메세지 추가
         if (isError && validFlag) {
           String errorMessage = null;

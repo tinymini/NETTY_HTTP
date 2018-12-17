@@ -11,12 +11,6 @@ import com.github.tinymini.netty.common.exception.CustomException;
  *
  */
 public interface ApiHandler {
-  /**
-   * 유효성 검사 및 해당 오브젝트 리턴
-   * 
-   * @param requestData
-   */
-  public boolean validate(Map<String, List<String>> requestData);
 
   /**
    * 유효성 검사 및 해당 오브젝트 리턴
@@ -24,13 +18,6 @@ public interface ApiHandler {
    * @param requestData
    */
   public Object validateAndGetModel(Map<String, List<String>> requestData);
-
-  /**
-   * 실행
-   * 
-   * @param requestData
-   */
-  public ApiHandler execute() throws CustomException;
 
   /**
    * 실행
