@@ -3,9 +3,7 @@ package com.github.tinymini.netty.core.web.service;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONNECTION;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONTINUE;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -16,11 +14,9 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
-import com.github.tinymini.netty.common.Code;
+import com.github.tinymini.netty.common.HttpCode;
 import com.github.tinymini.netty.common.util.BeanUtils;
 import com.github.tinymini.netty.common.util.LoggingUtils;
-import com.github.tinymini.netty.common.util.MessageUtils;
-import com.github.tinymini.netty.core.web.ApiBase;
 import com.github.tinymini.netty.web.WebConstants;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -35,13 +31,14 @@ import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.CharsetUtil;
 
 public final class RequestParser extends SimpleChannelInboundHandler<FullHttpMessage>
-    implements WebConstants, Code {
+    implements WebConstants, HttpCode {
   protected final Log logger = LogFactory.getLog(getClass());
 
   private ByteBuf requestBody = Unpooled.buffer();
@@ -61,18 +58,16 @@ public final class RequestParser extends SimpleChannelInboundHandler<FullHttpMes
   }
 
   private boolean writeResponse(HttpObject currentObj, ChannelHandlerContext ctx,
-      HttpRequest request, Map<String, Object> apiResult) throws JsonGenerationException, JsonMappingException, IOException {
+      HttpRequest request, Map<String, Object> apiResult)
+      throws JsonGenerationException, JsonMappingException, IOException {
     // Decide whether to close the connection or not.
     boolean keepAlive = HttpUtil.isKeepAlive(request);
     // Build the response object.
-    int resCd = ApiBase.nvl(apiResult.get(RESULT_CODE), UNKNOWN_ERROR, int.class);
-    apiResult.put(RESULT_CODE, MessageUtils.getStringErrorCode(resCd));
-    apiResult.put(RESULT_MESSAGE, MessageUtils.getMessage(resCd));
-    
+    HttpResponseStatus status = (HttpResponseStatus) apiResult.get(HTTP_STATUS);
     ObjectMapper mapper = new ObjectMapper();
-    
+
     FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
-        currentObj.decoderResult().isSuccess() ? OK : BAD_REQUEST,
+        currentObj.decoderResult().isSuccess() ? status : BAD_REQUEST,
         Unpooled.copiedBuffer(mapper.writeValueAsString(apiResult), CharsetUtil.UTF_8));
 
     response.headers().set(CONTENT_TYPE, CONTENT_TYPE_JSON);

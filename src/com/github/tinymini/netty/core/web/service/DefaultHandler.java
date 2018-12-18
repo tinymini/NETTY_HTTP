@@ -13,6 +13,6 @@ public class DefaultHandler extends ApiHandlerAdapter {
 
   @Override
   public ApiHandler execute(Object dto) {
-    return setResultCodeIfNotExist(API_NOT_EXIST);
+    return setStatusIfNotExist(NOT_IMPLEMENTED);
   }
 }

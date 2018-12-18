@@ -4,16 +4,16 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import com.github.tinymini.netty.common.Code;
+import com.github.tinymini.netty.common.HttpCode;
 import com.github.tinymini.netty.common.util.CommonUtils;
 import com.github.tinymini.netty.web.WebConstants;
 import com.github.tinymini.netty.web.util.ParameterUtils;
 
-public class ApiBase implements WebConstants, Code {
+public class ApiBase implements WebConstants, HttpCode {
   protected Log logger = LogFactory.getLog(getClass());
 
   /** 리턴용 */
-  public static final String INVALID_FIELD = "invalidField";
+  public static final String INVALID_FIELD = "INVALID_FIELD";
 
   /**
    * 파라메터 꺼내기

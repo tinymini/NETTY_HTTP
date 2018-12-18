@@ -10,7 +10,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import com.github.tinymini.netty.common.Code;
 import com.github.tinymini.netty.common.cipher.enums.CipherMode;
 import com.github.tinymini.netty.common.cipher.exception.CipherException;
 import com.github.tinymini.netty.common.cipher.model.SymmetricKeyModel;
@@ -46,13 +45,11 @@ public final class AESUtil extends AbstractSymmetricKeyCipherUtil {
         return this.resultType
             .convert(doFinal(Cipher.ENCRYPT_MODE, plaintext.getBytes(this.encoding)));
       } else {
-        throw new CipherException(Code.ENCRYPTION_FAIL, this.getClass(),
-            UNSUPPORTED_CIPHER_MODE, plaintext);
+        throw new CipherException(this.getClass(), INVALID_CIPHER_MODEL);
       }
     } catch (UnsupportedEncodingException | NullPointerException | InvalidKeyException
         | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException e) {
-      throw new CipherException(Code.ENCRYPTION_FAIL, this.getClass(), e.getMessage(),
-          plaintext);
+      throw new CipherException(this.getClass(), e.getMessage(), plaintext, true);
     }
   }
 
@@ -66,13 +63,11 @@ public final class AESUtil extends AbstractSymmetricKeyCipherUtil {
         return new String(doFinal(Cipher.DECRYPT_MODE, this.resultType.convert(ciphertext)),
             this.encoding);
       } else {
-        throw new CipherException(Code.DECRYPTION_FAIL, this.getClass(),
-            UNSUPPORTED_CIPHER_MODE, ciphertext);
+        throw new CipherException(this.getClass(), INVALID_CIPHER_MODEL);
       }
     } catch (UnsupportedEncodingException | NullPointerException | InvalidKeyException
         | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException e) {
-      throw new CipherException(Code.DECRYPTION_FAIL, this.getClass(), e.getMessage(),
-          ciphertext);
+      throw new CipherException(this.getClass(), e.getMessage(), ciphertext, false);
     }
   }
 

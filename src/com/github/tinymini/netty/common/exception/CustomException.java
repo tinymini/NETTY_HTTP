@@ -2,7 +2,9 @@ package com.github.tinymini.netty.common.exception;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import com.github.tinymini.netty.common.Code;
+import com.github.tinymini.netty.common.HttpCode;
+import com.github.tinymini.netty.common.util.LoggingUtils;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
  * 메세지 유틸 포함 익셉션
@@ -10,27 +12,29 @@ import com.github.tinymini.netty.common.Code;
  * @author shkim
  *
  */
-public class CustomException extends RuntimeException {
+public class CustomException extends RuntimeException implements HttpCode {
   private static final long serialVersionUID = 7420063159681514892L;
   protected final Log logger = LogFactory.getLog(getClass());
-  protected int errorCode = Code.FAIL;
+  protected static final String MESSAGE_BUNDLE = "messages";
+  protected static final String NULL = "NULL";
+  protected HttpResponseStatus status;
 
-  protected CustomException(int errorCode, String message) {
-    super(message);
-    this.errorCode = errorCode;
+  protected CustomException(String... messages) {
+    this(INTERNAL_SERVER_ERROR, messages);
   }
 
-  protected CustomException(int errorCode, String... messages) {
-    this(errorCode, makeMessage(messages));
+  protected CustomException(HttpResponseStatus status, String... messages) {
+    super(makeMessage(messages));
+    this.status = status;
   }
 
-  protected CustomException(int errorCode, Throwable cause) {
-    this(errorCode, cause.getMessage());
+  protected CustomException(HttpResponseStatus status, Throwable cause) {
+    this(status, cause.getMessage());
 
     if (logger.isInfoEnabled()) {
       StackTraceElement[] stack = cause.getStackTrace();
       if (stack.length > 2) {
-        logger.info(makeMessage(stack[0].toString(), "\n", stack[1].toString()));
+        logger.warn(LoggingUtils.stackTraceToString(stack, 20));
       }
     }
   }
@@ -54,8 +58,8 @@ public class CustomException extends RuntimeException {
    * 
    * @return
    */
-  public int getErrorCode() {
-    return errorCode;
+  public HttpResponseStatus getStatus() {
+    return this.status;
   }
 
 }

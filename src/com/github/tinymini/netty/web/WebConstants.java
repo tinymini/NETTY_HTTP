@@ -11,9 +11,9 @@ import com.github.tinymini.netty.common.Constants;
 public interface WebConstants extends Constants {
 
   /** 결과 코드 */
-  public static final String RESULT_CODE = "resCd";
+  public static final String HTTP_STATUS = "HTTP_STATUS";
   /** 결과 메세지 */
-  public static final String RESULT_MESSAGE = "resMsg";
+  public static final String MESSAGE = "message";
   /** 요청 URI */
   public static final String REQUEST_URI = "REQUEST_URI";
   /** 요청 메소드 */
@@ -24,6 +24,4 @@ public interface WebConstants extends Constants {
   public static final String REMOTE_HOST_ADDRESS = "REMOTE_HOST_ADDRESS";
   /** 요청한 호스트 포트 */
   public static final String REMOTE_HOST_PORT = "REMOTE_HOST_PORT";
-
-
 }

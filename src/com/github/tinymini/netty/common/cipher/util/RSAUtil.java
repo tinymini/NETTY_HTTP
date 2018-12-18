@@ -12,7 +12,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import com.github.tinymini.netty.common.Code;
 import com.github.tinymini.netty.common.cipher.enums.CipherMode;
 import com.github.tinymini.netty.common.cipher.enums.PaddingType;
 import com.github.tinymini.netty.common.cipher.exception.CipherException;
@@ -52,8 +51,7 @@ public final class RSAUtil extends PublicKeyCipherUtil implements CipherUtil {
           plaintext.getBytes(this.encoding)));
     } catch (InvalidKeySpecException | UnsupportedEncodingException | RuntimeException
         | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
-      throw new CipherException(Code.ENCRYPTION_FAIL, this.getClass(), e.getMessage(),
-          plaintext);
+      throw new CipherException(this.getClass(), e.getMessage(), plaintext, true);
     }
   }
 
@@ -65,8 +63,7 @@ public final class RSAUtil extends PublicKeyCipherUtil implements CipherUtil {
           this.resultType.convert(ciphertext)), this.encoding);
     } catch (InvalidKeySpecException | UnsupportedEncodingException | RuntimeException
         | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
-      throw new CipherException(Code.DECRYPTION_FAIL, this.getClass(), e.getMessage(),
-          ciphertext);
+      throw new CipherException(this.getClass(), e.getMessage(), ciphertext, false);
     }
   }
 

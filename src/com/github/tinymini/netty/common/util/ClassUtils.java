@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.ReflectionUtils;
-import com.github.tinymini.netty.common.Code;
+import com.github.tinymini.netty.common.HttpCode;
 import com.github.tinymini.netty.common.annotation.field.Validate;
 import com.github.tinymini.netty.common.enums.ExceptionMessage;
 import com.github.tinymini.netty.common.enums.WritingCase;
@@ -24,7 +24,9 @@ import com.github.tinymini.netty.web.util.WebUtils;
  * @author shkim
  *
  */
-public final class ClassUtils implements Code {
+public final class ClassUtils implements HttpCode {
+  private static final String MESSAGE_BUNDLE = "messages";
+  private static final String INVALID_FIELD_DATA = "INVALID_FIELD_DATA";
 
   private ClassUtils() {
     throw new IllegalStateException(ExceptionMessage.NOT_INSTANTIABLE.msg());
@@ -143,7 +145,7 @@ public final class ClassUtils implements Code {
             errorMessage = annotation.message();
           }
           if (!CommonUtils.hasText(errorMessage)) {
-            errorMessage = MessageUtils.getMessage(INVALID_FIELD_DATA, fieldName);
+            errorMessage = MessageUtils.getMessage(MESSAGE_BUNDLE, INVALID_FIELD_DATA, fieldName);
           }
           errorMap.put(fieldName, errorMessage);
         }

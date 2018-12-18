@@ -7,6 +7,7 @@ import com.github.tinymini.netty.common.exception.CustomException;
 import com.github.tinymini.netty.common.util.ClassUtils;
 import com.github.tinymini.netty.core.web.ApiBase;
 import com.github.tinymini.netty.web.enums.ParameterType;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
  * API 공통
@@ -44,14 +45,14 @@ public abstract class ApiHandlerAdapter extends ApiBase implements ApiHandler {
     return this;
   }
 
-  public ApiHandler setResultCode(int errorCode) {
-    this.resultObject.put(RESULT_CODE, errorCode);
+  public ApiHandler setStatus(HttpResponseStatus status) {
+    this.resultObject.put(HTTP_STATUS, status);
     return this;
   }
 
-  public ApiHandler setResultCodeIfNotExist(int errorCode) {
-    if (this.resultObject.get(RESULT_CODE) == null) {
-      this.resultObject.put(RESULT_CODE, errorCode);
+  public ApiHandler setStatusIfNotExist(HttpResponseStatus status) {
+    if (this.resultObject.get(HTTP_STATUS) == null) {
+      this.resultObject.put(HTTP_STATUS, status);
     }
     return this;
   }
@@ -82,11 +83,11 @@ public abstract class ApiHandlerAdapter extends ApiBase implements ApiHandler {
    * @param requestData
    * @return
    */
-  public <T> T validateAndSetResultCode(T model, Map<String, List<String>> requestData) {
+  public <T> T validateAndSetStatus(T model, Map<String, List<String>> requestData) {
     ClassUtils.autoComplete(model, requestData, this.errorMap);
     if (this.errorMap.size() > 0) {
       putResult(INVALID_FIELD, this.errorMap);
-      setResultCode(INVALID_API_PARAMETER);
+      setStatus(BAD_REQUEST);
       return null;
     } else {
       return model;

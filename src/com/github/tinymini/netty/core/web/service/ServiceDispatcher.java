@@ -14,6 +14,7 @@ import com.github.tinymini.netty.common.util.LoggingUtils;
 import com.github.tinymini.netty.core.web.ApiBase;
 import com.github.tinymini.netty.core.web.handler.ApiHandler;
 import com.github.tinymini.netty.core.web.handler.ApiHandlerAdapter;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 
 /**
@@ -55,7 +56,7 @@ public class ServiceDispatcher extends ApiBase {
   public ApiHandler getDefaultHandler(Exception e) {
     ApiHandlerAdapter defaultHandler = getDefaultHandler();
     if (e instanceof CustomException) {
-      defaultHandler.setResultCode(((CustomException) e).getErrorCode());
+      defaultHandler.setStatus(((CustomException) e).getStatus());
     }
     logger.error(e);
     return defaultHandler;
@@ -67,8 +68,8 @@ public class ServiceDispatcher extends ApiBase {
    * @param errorCode
    * @return
    */
-  public ApiHandler getDefaultHandler(int errorCode) {
-    return getDefaultHandler().setResultCode(errorCode);
+  public ApiHandler getDefaultHandler(HttpResponseStatus status) {
+    return getDefaultHandler().setStatus(status);
   }
 
   /**
@@ -146,7 +147,7 @@ public class ServiceDispatcher extends ApiBase {
       Object validatedDto = service.validateAndGetModel(paramMap);
 
       if (validatedDto == null) {
-        return service.setResultCode(INVALID_API_PARAMETER);
+        return service.setStatus(BAD_REQUEST);
       }
 
       // 서비스 실행

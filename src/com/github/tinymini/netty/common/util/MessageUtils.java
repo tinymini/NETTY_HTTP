@@ -5,7 +5,7 @@ import java.util.Locale;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import com.github.tinymini.netty.common.Constants;
-import com.github.tinymini.netty.common.Code;
+import com.github.tinymini.netty.common.HttpCode;
 
 /**
  * 메세지 유틸
@@ -17,7 +17,7 @@ public class MessageUtils implements Constants {
   /** 캐시 맵 */
   private static HashMap<String, ResourceBundleMessageSource> CACHE = new HashMap<>();
   /** 기본 사용 메세지 번들 명 */
-  private static String DefaultBaseName = getResourceNameFromClass(Code.class, "code");
+  private static String DefaultBaseName = getResourceNameFromClass(HttpCode.class, "messages");
   /** 설정 사용 메세지 번들 명 */
   private static String BaseName = DefaultBaseName;
 
@@ -85,6 +85,17 @@ public class MessageUtils implements Constants {
     return code < 0 ? "-" + String.format(CODE_FORMAT, -code) : String.format(CODE_FORMAT, code);
   }
 
+  /**
+   * 메세지
+   * 
+   * @param baseName
+   * @param key
+   * @param arguments
+   * @return
+   */
+  public static String getMessage(String baseName, String key, Object... arguments) {
+    return getMessage(baseName, key, Locale.getDefault(), null, arguments);
+  }
 
   /**
    * 메세지

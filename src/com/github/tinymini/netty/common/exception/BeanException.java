@@ -1,27 +1,26 @@
 package com.github.tinymini.netty.common.exception;
 
-import com.github.tinymini.netty.common.Code;
+import com.github.tinymini.netty.common.util.MessageUtils;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 public class BeanException extends CustomException {
   private static final long serialVersionUID = -454181360984421781L;
-  private static final String PREFIX = "No Bean for ";
-  private static final String ID_PREFIX = " Id: ";
-  private static final String CLASS_PREFIX = " Class: ";
+  private static final String NO_BEAN = "NO_BEAN";
 
-
-  public <T> BeanException(int errorCode, String beanId, Class<T> clazz) {
-    super(errorCode, PREFIX, ID_PREFIX, beanId, CLASS_PREFIX, clazz.getName());
+  public <T> BeanException(HttpResponseStatus status, String beanId, Class<T> clazz) {
+    super(status, MessageUtils.getMessage(MESSAGE_BUNDLE, NO_BEAN, beanId,
+        clazz == null ? NULL : clazz.getName()));
   }
 
   public <T> BeanException(String beanId, Class<T> clazz) {
-    super(Code.NO_BEAN, PREFIX, ID_PREFIX, beanId, CLASS_PREFIX, clazz.getName());
+    this(INTERNAL_SERVER_ERROR, beanId, clazz);
   }
 
   public <T> BeanException(String beanId) {
-    super(Code.NO_BEAN, PREFIX, ID_PREFIX, beanId);
+    this(beanId, null);
   }
 
   public <T> BeanException(Class<T> clazz) {
-    super(Code.NO_BEAN, PREFIX, CLASS_PREFIX, clazz.getName());
+    this(null, clazz);
   }
 }

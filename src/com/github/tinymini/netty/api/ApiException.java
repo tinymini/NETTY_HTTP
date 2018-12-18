@@ -1,7 +1,7 @@
 package com.github.tinymini.netty.api;
 
-import com.github.tinymini.netty.common.Code;
 import com.github.tinymini.netty.common.exception.CustomException;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
  * API 익셉션
@@ -13,18 +13,18 @@ public class ApiException extends CustomException {
   private static final long serialVersionUID = -744741081235948125L;
 
   public ApiException(String message) {
-    super(Code.API_NOT_EXIST, message);
+    super(INTERNAL_SERVER_ERROR, message);
   }
 
-  public ApiException(int errorCode, String message) {
-    super(errorCode, message);
+  public ApiException(HttpResponseStatus status, String message) {
+    super(status, message);
   }
 
-  public ApiException(int errorCode, Throwable cause) {
-    super(Code.UNKNOWN_ERROR, cause);
+  public ApiException(HttpResponseStatus status, Throwable cause) {
+    super(status, cause);
   }
 
   public ApiException(Throwable cause) {
-    super(Code.UNKNOWN_ERROR, cause);
+    super(INTERNAL_SERVER_ERROR, cause);
   }
 }

@@ -11,7 +11,6 @@ import org.bouncycastle.crypto.paddings.BlockCipherPadding;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
-import com.github.tinymini.netty.common.Code;
 import com.github.tinymini.netty.common.cipher.enums.CipherMode;
 import com.github.tinymini.netty.common.cipher.enums.PaddingType;
 import com.github.tinymini.netty.common.cipher.exception.CipherException;
@@ -45,8 +44,7 @@ public final class RijndaelUtil extends AbstractSymmetricKeyCipherUtil {
           .convert(doFinal(this.paddedBufferedBlockCipher, plaintext.getBytes(this.encoding)));
     } catch (UnsupportedEncodingException | DataLengthException | IllegalStateException
         | InvalidCipherTextException e) {
-      throw new CipherException(Code.ENCRYPTION_FAIL, this.getClass(), e.getMessage(),
-          plaintext);
+      throw new CipherException(this.getClass(), e.getMessage(), plaintext, true);
     }
   }
 
@@ -59,8 +57,7 @@ public final class RijndaelUtil extends AbstractSymmetricKeyCipherUtil {
           this.encoding);
     } catch (DataLengthException | IllegalStateException | UnsupportedEncodingException
         | InvalidCipherTextException e) {
-      throw new CipherException(Code.DECRYPTION_FAIL, this.getClass(), e.getMessage(),
-          ciphertext);
+      throw new CipherException(this.getClass(), e.getMessage(), ciphertext, false);
     }
   }
 
