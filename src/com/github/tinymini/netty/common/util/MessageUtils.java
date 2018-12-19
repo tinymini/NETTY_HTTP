@@ -5,7 +5,6 @@ import java.util.Locale;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import com.github.tinymini.netty.common.Constants;
-import com.github.tinymini.netty.common.HttpCode;
 
 /**
  * 메세지 유틸
@@ -16,10 +15,8 @@ import com.github.tinymini.netty.common.HttpCode;
 public class MessageUtils implements Constants {
   /** 캐시 맵 */
   private static HashMap<String, ResourceBundleMessageSource> CACHE = new HashMap<>();
-  /** 기본 사용 메세지 번들 명 */
-  private static String DefaultBaseName = getResourceNameFromClass(HttpCode.class, "messages");
   /** 설정 사용 메세지 번들 명 */
-  private static String BaseName = DefaultBaseName;
+  private static String baseName;
 
   /**
    * 기본 메세지 번들명 설정
@@ -27,7 +24,7 @@ public class MessageUtils implements Constants {
    * @param defaultBaseName
    */
   public static void setBaseMessageBundle(String baseName) {
-    MessageUtils.BaseName = baseName;
+    MessageUtils.baseName = baseName;
   }
 
   /**
@@ -36,7 +33,7 @@ public class MessageUtils implements Constants {
    * @param defaultBaseName
    */
   public static void setBaseMessageBundle(Class<?> clazz, String propertiesName) {
-    MessageUtils.BaseName = getResourceNameFromClass(clazz, propertiesName);
+    MessageUtils.baseName = getResourceNameFromClass(clazz, propertiesName);
   }
 
   /**
@@ -49,40 +46,17 @@ public class MessageUtils implements Constants {
   public static String getResourceNameFromClass(Class<?> clazz, String fileName) {
     return clazz.getName().replaceFirst(clazz.getSimpleName() + "$", "") + fileName;
   }
-
+  
   /**
-   * 설정된 기본 메세지번들 에서 메세지 반환
-   * 
-   * @param errorCode
-   * @return
-   */
-  public static String getMessage(int errorCode, Object... arguments) {
-    String message = MessageUtils.getMessage(MessageUtils.BaseName, errorCode, arguments);
-    if (message != null) {
-      return message;
-    }
-    return MessageUtils.getMessage(MessageUtils.DefaultBaseName, errorCode, arguments);
-  }
-
-  /**
-   * 메세지 번들에서 메세지 반환
+   * 메세지
    * 
    * @param baseName
    * @param key
+   * @param arguments
    * @return
    */
-  public static String getMessage(String baseName, int key, Object... arguments) {
-    return getMessage(baseName, "code." + key, Locale.getDefault(), null, arguments);
-  }
-
-  /**
-   * 코드 포맷
-   * 
-   * @param code
-   * @return
-   */
-  public static String getStringErrorCode(int code) {
-    return code < 0 ? "-" + String.format(CODE_FORMAT, -code) : String.format(CODE_FORMAT, code);
+  public static String getMessage(String key, Object... arguments) {
+    return getMessage(MessageUtils.baseName, key, Locale.getDefault(), null, arguments);
   }
 
   /**

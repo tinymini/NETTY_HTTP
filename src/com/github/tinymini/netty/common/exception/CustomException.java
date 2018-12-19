@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import com.github.tinymini.netty.common.HttpCode;
 import com.github.tinymini.netty.common.util.LoggingUtils;
+import com.github.tinymini.netty.common.util.MessageUtils;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
@@ -15,7 +16,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 public class CustomException extends RuntimeException implements HttpCode {
   private static final long serialVersionUID = 7420063159681514892L;
   protected final Log logger = LogFactory.getLog(getClass());
-  protected static final String MESSAGE_BUNDLE = "messages";
+  protected static final String MESSAGE_BUNDLE =
+      MessageUtils.getResourceNameFromClass(CustomException.class, "messages");
   protected static final String NULL = "NULL";
   protected HttpResponseStatus status;
 

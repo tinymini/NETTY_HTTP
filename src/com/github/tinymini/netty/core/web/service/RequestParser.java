@@ -16,6 +16,7 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import com.github.tinymini.netty.common.HttpCode;
 import com.github.tinymini.netty.common.util.BeanUtils;
+import com.github.tinymini.netty.common.util.CommonUtils;
 import com.github.tinymini.netty.common.util.LoggingUtils;
 import com.github.tinymini.netty.web.WebConstants;
 import io.netty.buffer.ByteBuf;
@@ -63,7 +64,8 @@ public final class RequestParser extends SimpleChannelInboundHandler<FullHttpMes
     // Decide whether to close the connection or not.
     boolean keepAlive = HttpUtil.isKeepAlive(request);
     // Build the response object.
-    HttpResponseStatus status = (HttpResponseStatus) apiResult.get(HTTP_STATUS);
+    HttpResponseStatus status = CommonUtils.nvl((HttpResponseStatus) apiResult.remove(HTTP_STATUS),
+        HttpResponseStatus.NOT_IMPLEMENTED);
     ObjectMapper mapper = new ObjectMapper();
 
     FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,

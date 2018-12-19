@@ -3,6 +3,7 @@ package com.github.tinymini.netty.common.util;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -25,8 +26,11 @@ import com.github.tinymini.netty.web.util.WebUtils;
  *
  */
 public final class ClassUtils implements HttpCode {
-  private static final String MESSAGE_BUNDLE = "messages";
+  private static final String MESSAGE_BUNDLE =
+      MessageUtils.getResourceNameFromClass(ClassUtils.class, "messages");
   private static final String INVALID_FIELD_DATA = "INVALID_FIELD_DATA";
+  private static final String SET_METHOD_PREFIX = "set";
+  private static final String VALIDATE_METHOD_PREFIX = "validate";
 
   private ClassUtils() {
     throw new IllegalStateException(ExceptionMessage.NOT_INSTANTIABLE.msg());
@@ -83,10 +87,30 @@ public final class ClassUtils implements HttpCode {
               switch (annotation.type()) {
                 // validation 메소드명 찾기
                 case FUNCTION: // 벨리데이션 메소드명으로 벨리데이션 실행
-                  String validationMethodName = CommonUtils.nvl(annotation.contidion(),
-                      WritingCase.camelCase.change("validate", fieldName));
-                  Method validationMethod = ReflectionUtils.findMethod(instanceClass,
-                      validationMethodName, paramField.getType());
+
+                  // 정해진 이름 또는 , validateCapitalized 또는 validateCamelCase 로 validationMethod 찾기
+                  String[] validationMethodNames =
+                      {annotation.contidion(), VALIDATE_METHOD_PREFIX + capitalize(fieldName),
+                          WritingCase.camelCase.change(VALIDATE_METHOD_PREFIX, fieldName)};
+
+                  if (logger.isDebugEnabled()) {
+                    logger.debug("find set validate method names :"
+                        + Arrays.toString(validationMethodNames));
+                  }
+
+                  Method validationMethod = null;
+                  for (int i = 0; i < validationMethodNames.length; i++) {
+                    String validationMethodName = validationMethodNames[i];
+                    if (validationMethodName == null) {
+                      continue;
+                    }
+                    validationMethod = ReflectionUtils.findMethod(instanceClass,
+                        validationMethodName, paramField.getType());
+                    if (validationMethod != null) {
+                      break;
+                    }
+                  }
+
                   try {
                     if ((boolean) validationMethod.invoke(instance,
                         CommonUtils.nvl(value, null, paramField.getType()))) {
@@ -119,14 +143,24 @@ public final class ClassUtils implements HttpCode {
           }
           // 값 설정 가능시
           if (isSettable) {
+            // 필드명 setCapitalized 또는 setCamelCase 로 setMethod 찾기
+            String[] setMethodNames = {SET_METHOD_PREFIX + capitalize(fieldName),
+                WritingCase.camelCase.change(SET_METHOD_PREFIX, fieldName)};
 
-            // setMethod 찾기
-            String setMethodName = WritingCase.camelCase.change("set", fieldName);
-            Method setMethod =
-                ReflectionUtils.findMethod(instanceClass, setMethodName, paramField.getType());
+            if (logger.isDebugEnabled()) {
+              logger.debug("find set method names :" + Arrays.toString(setMethodNames));
+            }
+
+            Method setMethod = null;
+            for (int i = 0; i < setMethodNames.length; i++) {
+              setMethod = ReflectionUtils.findMethod(instanceClass, setMethodNames[i],
+                  paramField.getType());
+              if (setMethod != null) {
+                break;
+              }
+            }
 
             if (setMethod != null) { // setMethod 존재시만 값 세팅 가능
-
               setMethod.invoke(instance,
                   CommonUtils.nvl(value, paramField.get(instance), paramField.getType()));
             }
@@ -214,6 +248,16 @@ public final class ClassUtils implements HttpCode {
     } else {
       return current.getDeclaredMethods();
     }
+  }
+
+  /**
+   * 첫글자만 대문자로 변경
+   * 
+   * @param source
+   * @return
+   */
+  private static String capitalize(String source) {
+    return source.substring(0, 1).toUpperCase() + source.substring(1);
   }
 
 }

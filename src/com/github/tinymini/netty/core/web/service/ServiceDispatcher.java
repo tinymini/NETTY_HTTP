@@ -59,6 +59,7 @@ public class ServiceDispatcher extends ApiBase {
       defaultHandler.setStatus(((CustomException) e).getStatus());
     }
     logger.error(e);
+    defaultHandler.putResult("CAUSE", e.getMessage());
     return defaultHandler;
   }
 
@@ -152,7 +153,7 @@ public class ServiceDispatcher extends ApiBase {
 
       // 서비스 실행
       if (logger.isDebugEnabled()) {
-        logger.debug("execute:" + serviceUri);
+        logger.debug("execute: " + serviceUri);
       }
       return service.execute(validatedDto);
     } catch (Exception e) {

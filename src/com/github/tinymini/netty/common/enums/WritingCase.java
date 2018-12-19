@@ -137,7 +137,7 @@ public enum WritingCase {
    * @param arg
    * @return
    */
-  private static String capitalize(String arg) {
+  public static String capitalize(String arg) {
     StringBuffer sb = new StringBuffer();
     if (arg.length() == 0) {
       return "";
