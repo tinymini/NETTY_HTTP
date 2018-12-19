@@ -8,12 +8,14 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.util.StringUtils;
 import com.github.tinymini.netty.common.exception.CustomException;
 import com.github.tinymini.netty.common.util.BeanUtils;
 import com.github.tinymini.netty.common.util.LoggingUtils;
 import com.github.tinymini.netty.core.web.ApiBase;
 import com.github.tinymini.netty.core.web.handler.ApiHandler;
 import com.github.tinymini.netty.core.web.handler.ApiHandlerAdapter;
+import com.github.tinymini.netty.web.enums.ParameterType;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 
@@ -59,7 +61,11 @@ public class ServiceDispatcher extends ApiBase {
       defaultHandler.setStatus(((CustomException) e).getStatus());
     }
     logger.error(e);
-    defaultHandler.putResult("CAUSE", e.getMessage());
+    String cause = e.getMessage();
+    if (cause == null) {
+      cause = e.getClass().getName();
+    }
+    defaultHandler.putResult("CAUSE", cause);
     return defaultHandler;
   }
 
@@ -135,10 +141,19 @@ public class ServiceDispatcher extends ApiBase {
     }
 
     try {
-      // POST 요청 처리
-      String requestBody = String.valueOf(requestMap.get(REQUEST_BODY));
       service.setRequestInfo(requestMap);
-      Map<String, List<String>> postParams = service.getParameterType().decode(requestBody);
+      // POST 요청 처리
+      String requestBody = String.valueOf(requestMap.get(REQUEST_BODY)).trim();
+      Map<String, List<String>> postParams = new HashMap<>();
+      if (StringUtils.hasText(requestBody)) {
+        // JSON 처리
+        if (requestBody.charAt(0) == '{' && requestBody.charAt(requestBody.length() - 1) == '}') {
+          postParams = ParameterType.JSON.decode(requestBody);
+        } else {
+          postParams = ParameterType.QUERY_STRING.decode(requestBody);
+        }
+      }
+
       if (logger.isDebugEnabled()) {
         logger.debug("postParams: " + LoggingUtils.paramMapToString(postParams));
       }
