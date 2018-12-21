@@ -3,6 +3,7 @@ package com.github.tinymini.netty.common.util;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -77,10 +78,10 @@ public final class ClassUtils implements HttpCode {
         String fieldName = paramField.getName();
         try {
           // 필드명으로 값 가져와서 필드 타입으로 변환
+          Object source = map.get(fieldName);
+          Object value = CommonUtils.convert(source, paramField.getType());
 
-          Object value = CommonUtils.convert(map.get(fieldName), paramField.getType());
           boolean isNullOrEmpty = CommonUtils.isNullOrEmpty(value);
-
           if (validFlag && annotation != null) {
             // errorMap 존재 하고 validate annotaion 존재시
             if (!isNullOrEmpty) {
@@ -94,8 +95,8 @@ public final class ClassUtils implements HttpCode {
                           WritingCase.camelCase.change(VALIDATE_METHOD_PREFIX, fieldName)};
 
                   if (logger.isDebugEnabled()) {
-                    logger.debug("find set validate method names :"
-                        + Arrays.toString(validationMethodNames));
+                    logger.debug(
+                        "find validateMethod names :" + Arrays.toString(validationMethodNames));
                   }
 
                   Method validationMethod = null;
@@ -124,7 +125,7 @@ public final class ClassUtils implements HttpCode {
                   break;
                 case REGEX: // 정규식
                   Pattern pattern = Pattern.compile(annotation.contidion());
-                  Matcher matcher = pattern.matcher(String.valueOf(value));
+                  Matcher matcher = pattern.matcher(String.valueOf(source));
                   if (matcher.matches()) {
                     isSettable = true;
                   } else {
@@ -148,7 +149,7 @@ public final class ClassUtils implements HttpCode {
                 WritingCase.camelCase.change(SET_METHOD_PREFIX, fieldName)};
 
             if (logger.isDebugEnabled()) {
-              logger.debug("find set method names :" + Arrays.toString(setMethodNames));
+              logger.debug("find setMethod names :" + Arrays.toString(setMethodNames));
             }
 
             Method setMethod = null;
@@ -160,16 +161,16 @@ public final class ClassUtils implements HttpCode {
               }
             }
 
-            if (setMethod != null) { // setMethod 존재시만 값 세팅 가능
+            if (setMethod != null) { // setMethod 존재시
               setMethod.invoke(instance,
                   CommonUtils.nvl(value, paramField.get(instance), paramField.getType()));
+            } else if (Modifier.PUBLIC == paramField.getModifiers()) {
+              paramField.set(instance,
+                  CommonUtils.nvl(value, paramField.get(instance), paramField.getType()));
             }
-            // else {
-            // paramField.set(instance, CommonUtils.nvl(value, paramField.get(instance),
-            // paramField.getType()));
-            // }
           }
         } catch (Exception e) {
+          e.printStackTrace();
           isError = true;
         }
         // 에러일 경우 메세지 추가

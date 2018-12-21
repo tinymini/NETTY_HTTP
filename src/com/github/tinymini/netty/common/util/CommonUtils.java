@@ -94,7 +94,7 @@ public final class CommonUtils {
     }
 
     if (convertType.isEnum()) {
-      return convertEnum(String.valueOf(source), convertType);
+      return convertEnum(source, convertType);
     } else if (ClassUtils.isPrimitiveOrWrapper(convertType)) {
       return convertPrimitive(source, convertType);
     } else {
@@ -133,16 +133,20 @@ public final class CommonUtils {
    * @return
    */
   @SuppressWarnings({"unchecked", "rawtypes"})
-  private static <T> T convertEnum(Object source, Class<T> detinationType) {
+  private static <T> T convertEnum(Object source, Class<T> destinationType) {
+    if (source.getClass().equals(destinationType)) {
+      return (T) source;
+    }
+    String strValue = String.valueOf(source);
     try {
-      // enum의 valueof 사용
-      if (source instanceof String) {
-        return (T) Enum.valueOf((Class<Enum>) detinationType, (String) source);
-      } else {
-        return (T) source;
+      try {
+        int index = Integer.parseInt(strValue);
+        return destinationType.getEnumConstants()[index];
+      } catch (NumberFormatException e) {
+        return (T) Enum.valueOf((Class<Enum>) destinationType, (String) source);
       }
     } catch (IllegalArgumentException e) {
-      throw new ConvertException(source.getClass(), detinationType);
+      throw new ConvertException(source.getClass(), destinationType);
     }
   }
 
